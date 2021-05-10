@@ -6,7 +6,7 @@
    </div>
    <div class="rightBody">
 <div class="editorWraper">
-    <v-btn @click="getMarkdown" style="width: 200px; height: 100px;">here</v-btn>
+    <v-btn @click="getMarkdown" style="width: 200px; height: 100px;">파일 업로드</v-btn>
     <editor ref="toastuiEditor"
     height="500px"
     initialEditType="markdown"
@@ -16,11 +16,6 @@
 #{{index + 1}}{{file.Key}}
 <v-btn @click="deleteFiles(file.Key)" color="red" text>삭제</v-btn>
 </div>
-<v-container><h1>파일 업로더</h1>
-<input type="file" id="file-uploader" ref="file" @change="handleFileUpload()">
-<v-btn @click="uploadFile" color="primary" text>파일 업로드</v-btn>
-</v-container> 
-
     </div>
     </div>
 </template>
