@@ -14,10 +14,7 @@ export default {
     return apiClient.get("/admin/payment");
   },
   getExhibition() {
-    return apiClient.get("/exhibition");
-  },
-  getBestExhibition() {
-    return apiClient.get("/exhibition/best");
+    return apiClient.get("/exhibition/admin");
   },
   getURL(id) {
     return apiClient.get("/admin/paymentdetail/" + id);

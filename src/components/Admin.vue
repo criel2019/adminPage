@@ -4,7 +4,7 @@
       <div v-if="!newExhibition">
         <v-data-table
           :headers="headers"
-          :items="BestExhibitionsList || ExhibitionsList"
+          :items="ExhibitionsList"
           :items-per-page="5"
           class="elevation-1"
         ></v-data-table>
@@ -49,15 +49,6 @@ export default {
       .then(response => {
         this.exhibitions = response.data
         console.log('기획전' + this.exhibitions.exhibition)
-      })
-      .catch(error => {
-        console.log('There was an error:', error.response)
-      })
-
-    EventService.getBestExhibition()
-      .then(response => {
-        this.bestExhibitions = response.data
-        console.log('베스트 기획전' + this.bestExhibitions.exhibition)
       })
       .catch(error => {
         console.log('There was an error:', error.response)
@@ -119,49 +110,6 @@ export default {
           ].itemId.length
           result[index] = {
             exhibitionId: exhibitionId[index],
-            title: title[index],
-            dateStart: dateStart[index],
-            dateEnd: dateEnd[index],
-            show: show[index],
-            rank: rank[index],
-            lengthOfItems: lengthOfItems[index]
-          }
-        }
-        return result
-      }
-    },
-
-    BestExhibitionsList() {
-      if (this.bestExhibitions.exhibition === null) {
-        console.log(this.bestExhibitions.exhibition)
-        return this.bestExhibitions.exhibition
-      } else {
-        var ExhibitionId = []
-        var title = []
-        var dateStart = []
-        var dateEnd = []
-        var show = []
-        var rank = []
-        var lengthOfItems = []
-        var result = []
-        for (
-          var index = 0;
-          index < this.bestExhibitions.exhibition.length;
-          index++
-        ) {
-          ExhibitionId[index] = this.bestExhibitions.exhibition[
-            index
-          ].exhibitionId
-          title[index] = this.bestExhibitions.exhibition[index].title
-          dateStart[index] = this.bestExhibitions.exhibition[index].title
-          dateEnd[index] = this.bestExhibitions.exhibition[index].dateEnd
-          show[index] = this.bestExhibitions.exhibition[index].visible
-          rank[index] = this.bestExhibitions.exhibition[index].rank
-          lengthOfItems[index] = this.bestExhibitions.exhibition[
-            index
-          ].itemId.length
-          result[index] = {
-            ExhibitionId: ExhibitionId[index],
             title: title[index],
             dateStart: dateStart[index],
             dateEnd: dateEnd[index],
