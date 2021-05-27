@@ -1,22 +1,21 @@
 <template>
   <div class="AdminExhibition">
-<Admin />
+    <Admin />
   </div>
 </template>
 
 <script>
-
-import Admin from  '../components/Admin.vue';
-
-
-
+import Admin from '../components/Admin.vue'
 export default {
   name: 'Exhibition',
-   components: {
-       Admin,
+  components: {
+    Admin
   },
+  data() {
+    return {
+      example: 'shit'
+    }
+  }
 }
 </script>
-<style>
-
-</style>
+<style></style>

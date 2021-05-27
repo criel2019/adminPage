@@ -13,14 +13,20 @@ const routes = [
   {
     path: '/detail',
     name: 'Detail',
-    component: () => import(/* webpackChunkName: "Detail" */ '../views/AdminProductDetail.vue')
+    component: () => import('../views/AdminProductDetail.vue')
   },
   {
-    path: '/main',
-    name: 'Main',
-    component: () => import(/* webpackChunkName: "Detail" */ '../views/AdminProductMain.vue')
+    path: '/payment',
+    name: 'Payment',
+    component: () => import('../views/AdminProductPayment.vue')
   },
-  
+  {
+    path: '/payment/paymentdetail',
+    name: 'PaymentDetail',
+    component: () => import('../views/AdminProductPaymentDetail.vue'),
+    props: true,
+  },
+
 ]
 
 const router = new VueRouter({
