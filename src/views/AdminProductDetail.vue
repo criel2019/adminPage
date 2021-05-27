@@ -15,6 +15,7 @@
 <div v-for="(file, index) in fileList" :key="file.Key">
 #{{index + 1}}{{file.Key}}
 <v-btn @click="deleteFiles(file.Key)" color="red" text>삭제</v-btn>
+<v-btn @click="setFiles(file.Key)" color="green" text>파일 열기</v-btn>
 </div>
     </div>
     </div>
@@ -36,10 +37,11 @@ export default {
   data(){
  return { 
       file: null,
-      albumBucketName: 'advist',
+      MarkdownsBucketName: 'advist',
       bucketRegion: 'ap-northeast-2',
       IdentityPoolId: 'ap-northeast-2:322e4b0e-9752-4390-a444-24f67b4afccf',
         fileList: [],
+        URL: null,
  }
   },
   created(){
@@ -59,7 +61,7 @@ export default {
 
 var s3 = new AWS.S3({
   apiVersion: '2006-03-01',
-  params: {Bucket: this. albumBucketName}
+  params: {Bucket: this. MarkdownsBucketName}
 });
 
 let key = "AdminPage1.md"
@@ -88,12 +90,12 @@ s3.upload({
 
          var s3 = new AWS.S3({
         apiVersion: '2006-03-01',
-        params: {Bucket: this. albumBucketName}
+        params: {Bucket: this.MarkdownsBucketName}
         })
 
         s3.listObjects({Delimiter: '/'}, (err, data) =>{
             if (err) {
-             return alert('There was an error listing your albums: ' + err.message);
+             return alert('There was an error listing your Markdownss: ' + err.message);
             } else {
                 this.fileList = data.Contents
             console.log(data)
@@ -110,14 +112,14 @@ AWS.config.update({
 
 var s3 = new AWS.S3({
   apiVersion: '2006-03-01',
-  params: {Bucket: this. albumBucketName}
+  params: {Bucket: this.MarkdownsBucketName}
 });
        
        s3.deleteObject({Key: key}, (err, data)=> {
     if (err) {
-      return alert('There was an error deleting your photo: ', err.message);
+      return alert('There was an error deleting your MarkdownFile: ', err.message);
     }
-    alert('Successfully deleted photo.');
+    alert('Successfully deleted MarkdownFile.');
     this.getFiles()
     console.log(data)
   });
@@ -134,7 +136,21 @@ var s3 = new AWS.S3({
             
             this.uploadFile()
       },
-    } 
+      setMarkdown(data){
+          this.editor = this.$refs.toastuiEditor.invoke('setMarkdown',data)
+      },
+      setContent(data){
+           this.setMarkdown(data)
+      },
+      setFiles(){
+      const fileUrl = URL // provide file location
+
+fetch(fileUrl)
+   .then( r => r.text() )
+   .then( t => this.setContent(t) )
+
+    }
+    }
 }
 </script>
 <style scoped>

@@ -3,6 +3,7 @@
   <v-main>
       <router-link to="/">AdminExhibition </router-link>
        <router-link to="/detail">detail </router-link>
+            <router-link to="/main">Main </router-link>
       <router-view/>
   </v-main>
 </v-app>
