@@ -113,15 +113,13 @@
         </v-col>
       </v-row>
     </v-container>
-    <v-col class="d-flex" cols="12" sm="6">
-      <v-text-field
-        id="quantity"
-        v-model="quantity"
-        label="quantity"
-        :rules="rules"
-        hide-details="auto"
-      ></v-text-field>
-    </v-col>
+
+    <v-container v-for="item in DynamicallyAddingItems" :key="item">
+      <v-text-field placeholder="새로운 상품번호와 내용을 입력해주세요">
+      </v-text-field>
+    </v-container>
+
+    <v-btn @click="pushItems">상품추가</v-btn>
 
     <p>
       <v-btn type="submit" id="submit" value="Submit">저장</v-btn>
@@ -143,14 +141,17 @@ export default {
       quantity: null,
       endPicker: null,
       startPicker: null,
-      timeStart: '11:15',
-      timeEnd: '11:10',
+      timeStart: "11:15",
+      timeEnd: "11:10",
       finalTimeStart: null,
       finalTimeEnd: null,
       radioGroup: null,
+      ExhibitionItems: [1],
+      valueOfItems: 1,
+      labelString: "items",
       rules: [
-        value => !!value || 'Required.',
-        value => (value && value.length >= 1) || '최소 1글자 이상 적어주세요'
+        (value) => !!value || "Required.",
+        (value) => (value && value.length >= 1) || "최소 1글자 이상 적어주세요",
       ],
       items: [
         1,
@@ -172,22 +173,33 @@ export default {
         17,
         18,
         19,
-        20
-      ]
-    }
+        20,
+      ],
+    };
   },
   computed: {
     finalTimeSet() {
-      return `${this.finalTimeStart} ${this.finalTimeEnd}`
-    }
+      return `${this.finalTimeStart} ${this.finalTimeEnd}`;
+    },
+    labelValue() {
+      return this.labelString + this.valueOfItems;
+    },
+
+    DynamicallyAddingItems() {
+      return this.ExhibitionItems;
+    },
   },
   methods: {
-    allowedHours: v => v % 2,
-    allowedMinutes: v => v >= 10 && v <= 50,
-    allowedStep: m => m % 5 === 0,
+    allowedHours: (v) => v % 2,
+    allowedMinutes: (v) => v >= 10 && v <= 50,
+    allowedStep: (m) => m % 5 === 0,
     timeSet() {
-      this.finalTimeStart = this.timeStart + ':00'
-      this.finalTimeEnd = this.timeEnd + ':59'
+      this.finalTimeStart = this.timeStart + ":00";
+      this.finalTimeEnd = this.timeEnd + ":59";
+    },
+    pushItems() {
+      this.valueOfItems++;
+      this.ExhibitionItems.push(this.valueOfItems);
     },
     onSubmit() {
       let ExhibitionInfo = {
@@ -197,19 +209,19 @@ export default {
         show: this.show,
         end: this.end,
         priority: this.priority,
-        quantity: this.quantity
-      }
-      this.$emit('exhibition-submitted', ExhibitionInfo)
-      this.id = null
-      this.title = null
-      this.start = null
-      this.end = null
-      this.show = null
-      this.priority = null
-      this.quantity = null
-    }
-  }
-}
+        quantity: this.quantity,
+      };
+      this.$emit("exhibition-submitted", ExhibitionInfo);
+      this.id = null;
+      this.title = null;
+      this.start = null;
+      this.end = null;
+      this.show = null;
+      this.priority = null;
+      this.quantity = null;
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

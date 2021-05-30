@@ -1,36 +1,41 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Admin from '../views/AdminExhibition.vue'
+import Vue from "vue";
+import VueRouter from "vue-router";
+import Admin from "../views/AdminExhibition.vue";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/',
-    name: 'AdminExhibition',
-    component: Admin
+    path: "/",
+    name: "AdminExhibition",
+    component: Admin,
   },
   {
-    path: '/detail',
-    name: 'Detail',
-    component: () => import('../views/AdminProductDetail.vue')
+    path: "/detail",
+    name: "Detail",
+    component: () => import("../views/AdminProductDetail.vue"),
   },
   {
-    path: '/payment',
-    name: 'Payment',
-    component: () => import('../views/AdminProductPayment.vue')
+    path: "/payment",
+    name: "Payment",
+    component: () => import("../views/AdminProductPayment.vue"),
   },
   {
-    path: '/payment/paymentdetail',
-    name: 'PaymentDetail',
-    component: () => import('../views/AdminProductPaymentDetail.vue'),
+    path: "/payment/paymentdetail",
+    name: "PaymentDetail",
+    component: () => import("../views/AdminProductPaymentDetail.vue"),
     props: true,
   },
-
-]
+  {
+    path: "/product",
+    name: "Product",
+    component: () => import("../views/AdminProduct.vue"),
+    props: true,
+  },
+];
 
 const router = new VueRouter({
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

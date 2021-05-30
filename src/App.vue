@@ -2,7 +2,7 @@
   <v-app>
     <v-card
       class="xl-auto lg-auto md-auto sm-auto xs-auto overflow-hidden"
-      height="1800"
+      height="5000px"
     >
       <v-app-bar dark>
         <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
@@ -63,9 +63,9 @@
 export default {
   data: () => ({
     drawer: false,
-    group: null
-  })
-}
+    group: null,
+  }),
+};
 </script>
 <style scoped>
 .link-to {
