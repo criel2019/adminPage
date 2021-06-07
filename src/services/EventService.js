@@ -30,4 +30,54 @@ export default {
       console.log(error);
     }
   },
+
+  async updateExhibition(
+    exhibitionId,
+    title,
+    dateStart,
+    dateEnd,
+    visible,
+    rank,
+    itemInfo
+  ) {
+    try {
+      const response = await apiClient.post("/admin/updateexhibition", {
+        exhibitionId: exhibitionId,
+        title: title,
+        dateStart: dateStart,
+        dateEnd: dateEnd,
+        visible: visible,
+        rank: rank,
+        itemInfo: itemInfo,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  async newExhibitionSave(
+    exhibitionId,
+    title,
+    dateStart,
+    dateEnd,
+    visible,
+    rank,
+    itemInfo
+  ) {
+    try {
+      const response = await apiClient.post("/admin/newexhibition", {
+        exhibitionId: exhibitionId,
+        title: title,
+        dateStart: dateStart,
+        dateEnd: dateEnd,
+        visible: visible,
+        rank: rank,
+        itemInfo: itemInfo,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };

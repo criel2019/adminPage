@@ -12,7 +12,7 @@
         <v-card-text>
           <v-col>
             <v-text-field
-              v-model="Id"
+              v-model="id"
               label="Id"
               hide-details="auto"
               outlined
@@ -150,16 +150,19 @@
             value="100"
           ></v-progress-linear>
 
-          <OptionCard
-            v-for="options in optionItems"
-            class="optionCard"
-            :key="options"
-          />
+          <div v-for="(options, index) in optionItems" :key="options">
+            <OptionCard
+              :index="index"
+              :numbering="numbering"
+              class="optionCard"
+            >
+            </OptionCard>
+          </div>
           <v-btn
             style="float: right; margin-top:30px;"
             width="100"
             height="50"
-            @click="pushOptions()"
+            @click="[pushOptions(), NumberingFunction()]"
             >상품추가</v-btn
           >
         </v-card-text>
@@ -183,6 +186,14 @@ export default {
   },
   data() {
     return {
+      numbering: 1,
+      id: "id",
+      title: "title",
+      tag1: "tag1",
+      tag2: "tag2",
+      tag3: "tag3",
+      tag4: "tag4",
+      owner: "owner",
       optionItems: [0],
       radioGroup: 2,
       ItemsIndex: 0,
@@ -198,6 +209,9 @@ export default {
     this.getFiles();
   },
   methods: {
+    NumberingFunction() {
+      this.numbering++;
+    },
     handleFileUpload() {
       this.file = this.$refs.file.files[0];
     },

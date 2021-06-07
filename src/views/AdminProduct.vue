@@ -13,7 +13,7 @@
 
       <v-data-table
         :headers="headers"
-        :items="paymentValue"
+        :items="productItems"
         :search="search"
         class="tableList"
       ></v-data-table>
@@ -25,9 +25,20 @@
 export default {
   data() {
     return {
+      search: "",
+      productItems: [
+        {
+          userOrderId: 123,
+          productName: "테스트다몽",
+          author: "그런거 없음",
+          show: "iyes!",
+          quantity: "idon't know",
+          tag: "1",
+        },
+      ],
       headers: [
         {
-          text: "_Id",
+          text: "_id",
           value: "userOrderId",
           width: 50,
           align: "start",
@@ -40,6 +51,11 @@ export default {
         { text: "태그", value: "tag", width: 60 },
       ],
     };
+  },
+  computed: {
+    tagValue() {
+      return this.productItems[0].tag + "tag1";
+    },
   },
 };
 </script>

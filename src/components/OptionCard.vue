@@ -4,7 +4,7 @@
       class="headline mb-1"
       style="margin-left: 20px; padding-top:20px;"
     >
-      옵션 1
+      상품명{{ index + 1 }}
     </v-list-item-title>
     <v-col>
       <v-text-field
@@ -37,3 +37,22 @@
     </v-container>
   </v-card>
 </template>
+<script>
+export default {
+  props: ["numbering", "index"],
+
+  data() {
+    return {
+      owner: "owner",
+      radioGroup: false,
+      titleNumber: null,
+    };
+  },
+  watch: {
+    numberingAlignment() {
+      this.titleNumber = this.numbering;
+      return this.titleNumber;
+    },
+  },
+};
+</script>
