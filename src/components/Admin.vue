@@ -26,7 +26,8 @@
                           item.show,
                           item.rank,
                           item.lengthOfItems,
-                          item.itemInfo
+                          item.itemInfo,
+                          item.itemsId
                         ),
                       ]
                     "
@@ -55,6 +56,7 @@
         <div v-else>
           <AddExhibition
             @child="parents"
+            @finished="refreshPage"
             :switchSection="switchSection"
             :currentId="currentId"
             :currentTitle="currentTitle"
@@ -64,6 +66,7 @@
             :currentRank="currentRank"
             :currentLengthOfItems="currentLengthOfItems"
             :currentItemInfo="currentItemInfo"
+            :currentItemsId="currentItemsId"
             style="position: relative; top: 50px;"
           />
         </div>
@@ -102,9 +105,11 @@ export default {
       currentRank: null,
       currentLengthOfItems: null,
       currentItemInfo: [],
+      currentItemsId: [],
       exhibitions: null,
       bestExhibitions: null,
       newExhibition: true,
+      finished: null,
       headers: [
         {
           text: "_id",
@@ -137,6 +142,7 @@ export default {
       this.currentRank = currentValue.rank;
       this.currentLengthOfItems = currentValue.lengthOfItems;
       this.currentItemInfo = currentValue.itemInfo;
+      this.currentItemsId = currentValue.itemsId;
     },
     infoSet(
       exhibitionId,
@@ -146,7 +152,8 @@ export default {
       show,
       rank,
       lengthOfItems,
-      itemInfo
+      itemInfo,
+      itemsId
     ) {
       this.currentId = exhibitionId;
       this.currentTitle = title;
@@ -156,6 +163,14 @@ export default {
       this.currentRank = rank;
       this.currentLengthOfItems = lengthOfItems;
       this.currentItemInfo = itemInfo;
+      this.currentItemsId = itemsId;
+    },
+    refreshPage(currentValue) {
+      console.log(currentValue);
+      if (currentValue == "done")
+        setTimeout(() => {
+          this.$router.go();
+        }, 1500);
     },
     switchSection() {
       this.newExhibition = !this.newExhibition;
@@ -181,6 +196,7 @@ export default {
         var lengthOfItems = [];
         var result = [];
         var itemInfo = [];
+        var itemsId = [];
         for (
           var index = 0;
           index < this.exhibitions.exhibition.length;
@@ -196,6 +212,7 @@ export default {
           lengthOfItems[index] = this.exhibitions.exhibition[
             index
           ].itemId.length;
+          itemsId[index] = this.exhibitions.exhibition[index].itemId;
           result[index] = {
             exhibitionId: exhibitionId[index],
             title: title[index],
@@ -205,6 +222,7 @@ export default {
             rank: rank[index],
             lengthOfItems: lengthOfItems[index],
             itemInfo: itemInfo[index],
+            itemsId: itemsId[index],
           };
         }
         return result;

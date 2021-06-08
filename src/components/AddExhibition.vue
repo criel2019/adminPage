@@ -187,6 +187,10 @@ export default {
       type: Number,
       required: false,
     },
+    currentItemsId: {
+      type: Array,
+      required: false,
+    },
     currentItemInfo: {
       type: Array,
       required: true,
@@ -199,7 +203,7 @@ export default {
     if (startString !== null) {
       var splitedWords1 = startString.split(" ");
       var dateStart = splitedWords1[0];
-      var timeStart = splitedWords1[1];
+      var timeStart = splitedWords1[1].substring(0, 5);
     }
     this.currentValue.timeStart = timeStart;
     this.currentValue.dateStart = dateStart;
@@ -207,7 +211,7 @@ export default {
     if (endString !== null) {
       var splitedWords2 = endString.split(" ");
       var dateEnd = splitedWords2[0];
-      var timeEnd = splitedWords2[1];
+      var timeEnd = splitedWords2[1].substring(0, 5);
     }
     this.currentValue.timeEnd = timeEnd;
     this.currentValue.dateEnd = dateEnd;
@@ -216,6 +220,7 @@ export default {
     this.currentValue.lengthOfItems = this.currentLengthOfItems;
     this.currentValue.itemInfo = this.currentItemInfo;
     if (this.currentItemInfo.length == 0) this.pushItems();
+    this.currentValue.itemsId = this.currentItemsId;
   },
   data() {
     return {
@@ -229,8 +234,6 @@ export default {
       finalTimeEnd: null,
       radioGroup: null,
       labelString: "items",
-      itemsId: ["359", "200"],
-      itemsName: ["어쩌구 저쩌구", "쓰레기!"],
       law: {
         select: [(v) => !!v || "Item is required"],
         select2: [(v) => v.length > 0 || "Item is required in select 2"],
@@ -274,24 +277,23 @@ export default {
   methods: {
     updateExhibitionFunction() {
       EventService.updateExhibition(
-        this.currentId,
-        this.currentTitle,
-        this.currentDateStart,
-        this.currentDateEnd,
-        this.currentShow,
-        this.currentRank,
-        this.currentItemInfo
+        this.currentValue.id,
+        this.currentValue.title,
+        this.currentValue.dateStart + " " + this.finalTimeStart,
+        this.currentValue.dateEnd + " " + this.finalTimeEnd,
+        this.currentValue.show,
+        this.currentValue.rank,
+        this.currentValue.itemsId
       );
     },
     newExhibitionFunction() {
       EventService.newExhibitionSave(
-        this.currentId,
-        this.currentTitle,
-        this.currentDateStart,
-        this.currentDateEnd,
-        this.currentShow,
-        this.currentRank,
-        this.currentItemInfo
+        this.currentValue.title,
+        this.finalTimeStart,
+        this.finalTimeEnd,
+        this.currentValue.show,
+        this.currentValue.rank,
+        this.currentValue.itemsId
       );
     },
     resetCurrentValue() {
@@ -302,6 +304,7 @@ export default {
       this.currentValue.show = null;
       this.currentValue.rank = null;
       this.currentValue.itemInfo = [];
+      this.currentValue.itemsId = [];
       this.$emit("child", this.currentValue);
     },
     allowedHours: (v) => v % 2,
@@ -319,9 +322,11 @@ export default {
       if (this.currentValue.id == null) {
         this.newExhibitionFunction();
         console.log("새로운 기획전이 추가됨");
-      } else this.updateExhibitionFunction();
-
-      this.resetCurrentValue();
+      } else {
+        this.updateExhibitionFunction();
+        this.resetCurrentValue();
+      }
+      this.$emit("finished", "done");
     },
   },
 };

@@ -38,7 +38,7 @@ export default {
     dateEnd,
     visible,
     rank,
-    itemInfo
+    itemId
   ) {
     try {
       const response = await apiClient.post("/admin/updateexhibition", {
@@ -48,32 +48,24 @@ export default {
         dateEnd: dateEnd,
         visible: visible,
         rank: rank,
-        itemInfo: itemInfo,
+        itemId: itemId,
       });
       console.log(response.data);
     } catch (error) {
       console.log(error);
     }
+    return "done";
   },
 
-  async newExhibitionSave(
-    exhibitionId,
-    title,
-    dateStart,
-    dateEnd,
-    visible,
-    rank,
-    itemInfo
-  ) {
+  async newExhibitionSave(title, dateStart, dateEnd, visible, rank) {
     try {
+      console.log(title, dateStart, dateEnd);
       const response = await apiClient.post("/admin/newexhibition", {
-        exhibitionId: exhibitionId,
         title: title,
         dateStart: dateStart,
         dateEnd: dateEnd,
         visible: visible,
         rank: rank,
-        itemInfo: itemInfo,
       });
       console.log(response.data);
     } catch (error) {
