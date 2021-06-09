@@ -2,7 +2,7 @@
   <v-app>
     <v-card
       class="xl-auto lg-auto md-auto sm-auto xs-auto overflow-hidden"
-      height="5000px"
+      :height="height"
     >
       <v-app-bar dark>
         <v-app-bar-nav-icon @click="drawer = true"></v-app-bar-nav-icon>
@@ -54,7 +54,7 @@
           </v-list-item-group>
         </v-list>
       </v-navigation-drawer>
-      <router-view />
+      <router-view @controlHeight="increaseWindowSize" />
     </v-card>
   </v-app>
 </template>
@@ -64,7 +64,15 @@ export default {
   data: () => ({
     drawer: false,
     group: null,
+    height: 2800,
   }),
+  methods: {
+    increaseWindowSize(event) {
+      this.event = event;
+      this.height = this.height + event;
+      console.log(this.height);
+    },
+  },
 };
 </script>
 <style>

@@ -4,7 +4,7 @@
       class="headline mb-1"
       style="margin-left: 20px; padding-top:20px;"
     >
-      상품명{{ index + 1 }}
+      옵션#{{ index + 1 }}
     </v-list-item-title>
     <v-col>
       <v-text-field

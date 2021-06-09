@@ -9,6 +9,7 @@
             >저장</v-btn
           ></router-link
         >
+
         <v-card-text>
           <v-col>
             <v-text-field
@@ -144,6 +145,16 @@
               >
             </div>
           </div>
+
+          <template>
+            <v-file-input
+              style="margin-top: 50px; padding: 0 10px;"
+              accept="image/*"
+              label="후기 이미지"
+              outlined
+            ></v-file-input>
+          </template>
+
           <v-progress-linear
             color="grey darken-1"
             rounded
@@ -162,7 +173,7 @@
             style="float: right; margin-top:30px;"
             width="100"
             height="50"
-            @click="[pushOptions(), NumberingFunction()]"
+            @click="[pushOptions(), NumberingFunction(), callParentFunction()]"
             >상품추가</v-btn
           >
         </v-card-text>
@@ -218,6 +229,10 @@ export default {
     pushOptions() {
       this.ItemsIndex++;
       this.optionItems.push(this.ItemsIndex);
+    },
+    callParentFunction() {
+      this.$emit("controlHeight", 691); // emit an event to parent
+      console.log("it's working");
     },
     uploadFile() {
       AWS.config.update({
