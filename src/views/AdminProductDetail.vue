@@ -73,16 +73,6 @@
                 outlined
               ></v-text-field>
             </v-col>
-
-            <v-col>
-              <v-text-field
-                v-model="tag4"
-                label="태그4"
-                hide-details="auto"
-                style="width:180px; margin-left: 50px;"
-                outlined
-              ></v-text-field>
-            </v-col>
           </v-row>
 
           <v-col>
@@ -136,7 +126,7 @@
               >파일 업로드</v-btn
             >
             <div v-for="(file, index) in fileList" :key="file.Key">
-              #{{ index + 1 }}{{ file.Key }}
+              #{{ index + 1 }}: {{ file.Key }}
               <v-btn @click="deleteFiles(file.Key)" color="red" text
                 >삭제</v-btn
               >
@@ -145,7 +135,14 @@
               >
             </div>
           </div>
-
+          <v-col>
+            <v-text-field
+              v-model="mdName"
+              label="저장할 파일 이름을 지정해주세요."
+              hide-details="auto"
+              outlined
+            ></v-text-field>
+          </v-col>
           <template>
             <v-file-input
               style="margin-top: 50px; padding: 0 10px;"
@@ -197,6 +194,7 @@ export default {
   },
   data() {
     return {
+      mdName: null,
       numbering: 1,
       id: "id",
       title: "title",
@@ -213,7 +211,7 @@ export default {
       bucketRegion: "ap-northeast-2",
       IdentityPoolId: "ap-northeast-2:322e4b0e-9752-4390-a444-24f67b4afccf",
       fileList: [],
-      URL: null,
+      URL: "https://advist.s3.ap-northeast-2.amazonaws.com/testFile.md",
     };
   },
   created() {
@@ -247,7 +245,7 @@ export default {
         params: { Bucket: this.MarkdownsBucketName },
       });
 
-      let key = "AdminPage1.md";
+      let key = this.mdName + ".md";
       s3.upload(
         {
           Key: key,
@@ -258,11 +256,11 @@ export default {
           if (err) {
             console.log(err);
             return alert(
-              "There was an error uploading your html: ",
+              "There was an error uploading your Markdown: ",
               err.message
             );
           }
-          alert("Successfully uploaded html.");
+          alert("Successfully uploaded Markdown.");
           this.getFiles();
           console.log(data);
         }
@@ -332,13 +330,33 @@ export default {
     },
     setContent(data) {
       this.setMarkdown(data);
+      console.log(data);
     },
-    setFiles() {
-      const fileUrl = URL; // provide file location
+    setFiles(key) {
+      AWS.config.update({
+        region: this.bucketRegion,
+        credentials: new AWS.CognitoIdentityCredentials({
+          IdentityPoolId: this.IdentityPoolId,
+        }),
+      });
 
-      fetch(fileUrl)
-        .then((r) => r.text())
-        .then((t) => this.setContent(t));
+      var s3 = new AWS.S3({
+        apiVersion: "2006-03-01",
+        params: { Bucket: this.MarkdownsBucketName },
+      });
+
+      s3.getSignedUrl(
+        "getObject",
+        { Expires: 60 * 60, Key: key },
+        (err, url) => {
+          console.log(err);
+          console.log("The URL is", url);
+          const fileUrl = url; // provide file location
+          fetch(fileUrl)
+            .then((r) => r.text())
+            .then((t) => this.setContent(t));
+        }
+      );
     },
   },
 };

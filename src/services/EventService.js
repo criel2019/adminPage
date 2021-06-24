@@ -19,6 +19,9 @@ export default {
   getURL(id) {
     return apiClient.get("/admin/paymentdetail/" + id);
   },
+  getUserInfo() {
+    return apiClient.get("/admin/user/");
+  },
   async getRefund(id, reason) {
     try {
       const response = await apiClient.post("/admin/refund", {
