@@ -19,6 +19,9 @@ export default {
   getURL(id) {
     return apiClient.get("/admin/paymentdetail/" + id);
   },
+  allItems() {
+    return apiClient.get("/item/admin/allItem");
+  },
   getUserInfo() {
     return apiClient.get("/admin/user/");
   },

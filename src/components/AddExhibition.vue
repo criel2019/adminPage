@@ -136,9 +136,10 @@
         ><p>상품 순서 #{{ index + 1 }}</p>
         <v-select
           id="addItems"
-          v-model="addItems[index]"
-          :items="addItems"
+          v-model="currentItemsInfo[index]"
+          :items="addItemsList"
           required
+          @change="changeInfo()"
           :rules="law.select"
           outlined
         ></v-select>
@@ -189,7 +190,7 @@ export default {
     },
     currentItemsId: {
       type: Array,
-      required: false,
+      required: true,
     },
     currentItemInfo: {
       type: Array,
@@ -221,6 +222,17 @@ export default {
     this.currentValue.itemInfo = this.currentItemInfo;
     if (this.currentItemInfo.length == 0) this.pushItems();
     this.currentValue.itemsId = this.currentItemsId;
+
+    EventService.allItems()
+      .then((response) => {
+        this.allItems = response.data.item;
+        console.log(this.allItems);
+        console.log("준비가 될 때까지 기다려주세요");
+      })
+      .catch((error) => {
+        console.log("에러 발생");
+        console.log(error.response);
+      });
   },
   data() {
     return {
@@ -234,6 +246,7 @@ export default {
       finalTimeEnd: null,
       radioGroup: null,
       labelString: "items",
+      allItems: [],
       law: {
         select: [(v) => !!v || "Item is required"],
         select2: [(v) => v.length > 0 || "Item is required in select 2"],
@@ -245,27 +258,33 @@ export default {
     };
   },
   computed: {
-    addItems: {
-      get() {
-        var itemArray = [];
-        if (
-          this.currentValue.itemInfo.length == 1 ||
-          this.currentValue.itemInfo == undefined
-        ) {
-          itemArray.push("상품을 추가해주세요");
-        } else {
-          for (var k = 0; k < this.currentValue.itemInfo.length; k++) {
-            itemArray.push(
-              this.currentValue.itemInfo[k].itemId +
-                " " +
-                this.currentValue.itemInfo[k].title
-            );
-          }
-        }
-        return itemArray;
-      },
+    currentItemsInfo() {
+      let list1 = [];
+      let list2 = [];
+      let result = [];
+      for (var i = 0; i < this.currentItemsId.length; i++)
+        list1[i] = this.currentItemsId[i];
 
-      set() {},
+      for (var j = 0; j < this.currentItemInfo.length; j++)
+        list2[j] = this.currentItemInfo[j].title;
+
+      for (var k = 0; k < this.currentItemsId.length; k++)
+        result[k] = list1[k] + " " + list2[k];
+      return result;
+    },
+    addItemsList() {
+      let list1 = [];
+      let list2 = [];
+      let result = [];
+      for (var i = 0; i < this.allItems.length; i++)
+        list1[i] = this.allItems[i].itemId;
+
+      for (var j = 0; j < this.allItems.length; j++)
+        list2[j] = this.allItems[j].title;
+
+      for (var k = 0; k < this.allItems.length; k++)
+        result[k] = list1[k] + " " + list2[k];
+      return result;
     },
     finalTimeSet() {
       return `${this.finalTimeStart} ${this.finalTimeEnd}`;
@@ -275,6 +294,12 @@ export default {
     },
   },
   methods: {
+    changeInfo() {
+      var val = [];
+      for (var i = 0; i < this.currentItemsInfo.length; i++)
+        val[i] = this.currentItemsInfo[i].substring(0, 1);
+      this.currentValue.itemsId = val;
+    },
     updateExhibitionFunction() {
       EventService.updateExhibition(
         this.currentValue.id,
