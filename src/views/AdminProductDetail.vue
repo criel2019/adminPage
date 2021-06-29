@@ -17,6 +17,7 @@
               label="Id"
               hide-details="auto"
               outlined
+              class="py-1"
             ></v-text-field>
           </v-col>
 
@@ -26,6 +27,7 @@
               label="상품명"
               hide-details="auto"
               outlined
+              class="py-1"
             ></v-text-field>
           </v-col>
 
@@ -81,8 +83,10 @@
               label="Owner"
               hide-details="auto"
               outlined
+              class="py-6"
             ></v-text-field>
           </v-col>
+
           <v-col>
             <v-textarea
               outlined
@@ -112,6 +116,15 @@
               label="상품 썸네일"
               outlined
             ></v-file-input>
+            <v-select
+              :items="selectMd"
+              item-text="name"
+              item-value="value"
+              v-model="mdName"
+              label="작성할 상세 내용을 선택해주세요"
+              class="pa-3"
+            >
+            </v-select>
           </template>
           <div class="editorWraper">
             <editor
@@ -135,14 +148,6 @@
               >
             </div>
           </div>
-          <v-col>
-            <v-text-field
-              v-model="mdName"
-              label="저장할 파일 이름을 지정해주세요."
-              hide-details="auto"
-              outlined
-            ></v-text-field>
-          </v-col>
           <template>
             <v-file-input
               style="margin-top: 50px; padding: 0 10px;"
@@ -194,7 +199,10 @@ export default {
   },
   data() {
     return {
-      mdName: null,
+      mdName: {
+        name: null,
+        value: null,
+      },
       numbering: 1,
       id: "id",
       title: "title",
@@ -206,6 +214,10 @@ export default {
       optionItems: [0],
       radioGroup: 2,
       ItemsIndex: 0,
+      selectMd: [
+        { name: "상품설명", value: "desc" },
+        { name: "자주 묻는 질문", value: "question" },
+      ],
       file: null,
       MarkdownsBucketName: "advist",
       bucketRegion: "ap-northeast-2",
@@ -218,6 +230,16 @@ export default {
     this.getFiles();
   },
   methods: {
+    test() {
+      console.log(this.mdName);
+    },
+    // selectMdName(val) {
+    //   if (val == "상품설명") this.mdName = "desc";
+    //   else if (val == "자주 묻는 질문") this.mdName = "question";
+    //   else {
+    //     console.log("error occured");
+    //   }
+    // },
     NumberingFunction() {
       this.numbering++;
     },
@@ -365,7 +387,6 @@ export default {
 .editorWraper {
   width: 1175px;
   height: 600px;
-  margin-top: 50px;
   padding: 0 10px;
 }
 .optionCard {
