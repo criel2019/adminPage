@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
+  // baseURL: `http://localhost:5000/`,
   baseURL: `https://advist.herokuapp.com`,
   withCredentials: false, // This is the default
   headers: {
@@ -20,7 +21,10 @@ export default {
     return apiClient.get("/admin/paymentdetail/" + id);
   },
   allItems() {
-    return apiClient.get("/item/admin/allItem");
+    return apiClient.get("/item/admin/allitem");
+  },
+  allItemsInfo() {
+    return apiClient.get("/item/admin/alliteminfo");
   },
   getUserInfo() {
     return apiClient.get("/admin/user/");

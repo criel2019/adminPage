@@ -13,6 +13,7 @@ const routes = [
   {
     path: "/detail",
     name: "Detail",
+    props: true,
     component: () => import("../views/AdminProductDetail.vue"),
   },
   {
@@ -30,7 +31,6 @@ const routes = [
     path: "/product",
     name: "Product",
     component: () => import("../views/AdminProduct.vue"),
-    props: true,
   },
   {
     path: "/user",

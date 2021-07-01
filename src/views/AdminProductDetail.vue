@@ -197,6 +197,7 @@ export default {
     editor: Editor,
     OptionCard,
   },
+  props: [`itemId`],
   data() {
     return {
       mdName: {
