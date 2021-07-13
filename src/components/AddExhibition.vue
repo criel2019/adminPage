@@ -133,15 +133,21 @@
         ></v-progress-linear>
       </v-col>
       <v-container v-for="(item, index) in currentItemInfo" :key="index"
-        ><p>상품 순서 #{{ index + 1 }}</p>
+        ><v-row style="padding: 20px 5px;"
+          ><p>상품 순서 #{{ index + 1 }}</p>
+          <v-btn absolute right @click="deleteEvent(index)">삭제</v-btn></v-row
+        >
         <v-select
           id="addItems"
-          v-model="currentItemsInfo[index]"
-          :items="addItemsList"
+          v-model="defaultItem[index]"
+          :items="allItems"
+          item-text="title"
+          item-value="itemId"
           required
-          @change="changeInfo()"
           :rules="law.select"
+          @input="changeItem($event, index)"
           outlined
+          label="상품 선택"
         ></v-select>
       </v-container>
       <v-col>
@@ -222,22 +228,22 @@ export default {
     this.currentValue.itemInfo = this.currentItemInfo;
     if (this.currentItemInfo.length == 0) this.pushItems();
     this.currentValue.itemsId = this.currentItemsId;
+    this.defaultItem = this.currentItemsId;
 
     EventService.allItems()
       .then((response) => {
         this.allItems = response.data.item;
-        console.log(this.allItems);
         console.log("준비가 될 때까지 기다려주세요");
       })
       .catch((error) => {
-        console.log("에러 발생");
+        alert.log("에러 발생: " + error);
         console.log(error.response);
       });
   },
   data() {
     return {
       currentValue: {},
-      index: 0,
+      counter: 0,
       start: new Date().toISOString().substr(0, 10),
       end: new Date().toISOString().substr(0, 10),
       startPicker: null,
@@ -247,6 +253,7 @@ export default {
       radioGroup: null,
       labelString: "items",
       allItems: [],
+      defaultItem: [],
       law: {
         select: [(v) => !!v || "Item is required"],
         select2: [(v) => v.length > 0 || "Item is required in select 2"],
@@ -258,34 +265,6 @@ export default {
     };
   },
   computed: {
-    currentItemsInfo() {
-      let list1 = [];
-      let list2 = [];
-      let result = [];
-      for (var i = 0; i < this.currentItemsId.length; i++)
-        list1[i] = this.currentItemsId[i];
-
-      for (var j = 0; j < this.currentItemInfo.length; j++)
-        list2[j] = this.currentItemInfo[j].title;
-
-      for (var k = 0; k < this.currentItemsId.length; k++)
-        result[k] = list1[k] + " " + list2[k];
-      return result;
-    },
-    addItemsList() {
-      let list1 = [];
-      let list2 = [];
-      let result = [];
-      for (var i = 0; i < this.allItems.length; i++)
-        list1[i] = this.allItems[i].itemId;
-
-      for (var j = 0; j < this.allItems.length; j++)
-        list2[j] = this.allItems[j].title;
-
-      for (var k = 0; k < this.allItems.length; k++)
-        result[k] = list1[k] + " " + list2[k];
-      return result;
-    },
     finalTimeSet() {
       return `${this.finalTimeStart} ${this.finalTimeEnd}`;
     },
@@ -294,11 +273,9 @@ export default {
     },
   },
   methods: {
-    changeInfo() {
-      var val = [];
-      for (var i = 0; i < this.currentItemsInfo.length; i++)
-        val[i] = this.currentItemsInfo[i].substring(0, 1);
-      this.currentValue.itemsId = val;
+    deleteEvent(index) {
+      this.currentValue.itemInfo.splice(index, 1);
+      this.defaultItem.splice(index, 1);
     },
     updateExhibitionFunction() {
       EventService.updateExhibition(
@@ -314,12 +291,15 @@ export default {
     newExhibitionFunction() {
       EventService.newExhibitionSave(
         this.currentValue.title,
-        this.finalTimeStart,
-        this.finalTimeEnd,
+        this.currentValue.dateStart + " " + this.finalTimeStart,
+        this.currentValue.dateEnd + " " + this.finalTimeEnd,
         this.currentValue.show,
         this.currentValue.rank,
         this.currentValue.itemsId
       );
+    },
+    changeItem(v, index) {
+      this.currentValue.itemsId[index] = v;
     },
     resetCurrentValue() {
       this.currentValue.id = null;
@@ -340,7 +320,8 @@ export default {
       this.finalTimeEnd = this.currentValue.timeEnd + ":59";
     },
     pushItems() {
-      this.currentValue.itemInfo.push("상품을 추가해주세요");
+      this.counter++;
+      this.currentValue.itemInfo.push(this.counter);
     },
     onSubmit() {
       this.timeSet();

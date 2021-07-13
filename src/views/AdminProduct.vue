@@ -1,6 +1,13 @@
 <template>
   <div class="rightBody">
     <div v-if="isDataReady">
+      <router-link
+        class="event-link"
+        :to="{ name: 'Detail', params: { id: 0, length: this.length } }"
+        ><v-btn absolute right style="margin-top:-50px;"
+          >새 기획전</v-btn
+        ></router-link
+      >
       <v-card>
         <v-card-title>
           <v-text-field
@@ -23,7 +30,7 @@
               <template v-slot:activator="{ on }">
                 <router-link
                   class="event-link"
-                  :to="{ name: 'Product', params: { id: item.itemId } }"
+                  :to="{ name: 'Detail', params: { id: item.itemId } }"
                 >
                   <v-btn rounded color="grey lighten-1" v-on="on">
                     <div class="text-truncate" style="max-width: 500px">
@@ -48,7 +55,7 @@ export default {
     EventService.allItemsInfo()
       .then((response) => {
         this.allItemsInfo = response.data;
-        console.log(this.allItemsInfo);
+        this.length = this.allItemsInfo.itemInfo.length;
         console.log("준비가 될 때까지 기다려주세요");
         this.readyToShow();
       })
@@ -60,6 +67,7 @@ export default {
   data() {
     return {
       search: "",
+      length: null,
       isDataReady: false,
       allItemsInfo: null,
       headers: [

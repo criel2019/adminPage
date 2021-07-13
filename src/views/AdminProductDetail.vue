@@ -1,22 +1,22 @@
 <template>
   <div class="AdminExhibition">
-    <div class="rightBody">
+    <div class="rightBody" v-if="isDataReady">
       <v-card ref="form">
         <v-btn style="margin: 20px 0 0 30px;">취소</v-btn>
-
-        <router-link class="event-link" :to="{ name: 'Product' }">
-          <v-btn style="float: right; margin: 20px 30px 0 0;"
-            >저장</v-btn
-          ></router-link
+        <v-btn
+          @click="getOptionDataValue"
+          style="float: right; margin: 20px 30px 0 0;"
+          >저장</v-btn
         >
 
         <v-card-text>
           <v-col>
             <v-text-field
-              v-model="id"
+              v-model="itemId"
               label="Id"
               hide-details="auto"
               outlined
+              readonly
               class="py-1"
             ></v-text-field>
           </v-col>
@@ -32,8 +32,8 @@
           </v-col>
 
           <v-container class="px-0" style="margin-left: 15px;" fluid>
-            <v-radio-group v-model="radioGroup" row
-              >공개여부:
+            <v-radio-group v-model="labeling" row
+              >뱃지:
 
               <v-radio
                 style="margin-left: 20px;"
@@ -76,7 +76,18 @@
               ></v-text-field>
             </v-col>
           </v-row>
+          <v-container class="px-0" fluid style="margin-left: 20px;">
+            <v-radio-group v-model="deleteYN" row @change="updateDelete($event)"
+              >삭제여부:
 
+              <v-radio
+                style="margin-left: 20px;"
+                :label="`예`"
+                :value="true"
+              ></v-radio>
+              <v-radio :label="`아니오`" :value="false"></v-radio>
+            </v-radio-group>
+          </v-container>
           <v-col>
             <v-text-field
               v-model="owner"
@@ -90,17 +101,17 @@
           <v-col>
             <v-textarea
               outlined
+              v-model="coachDesc"
               name="introduction"
               label="코치 소개"
-              value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
             ></v-textarea>
           </v-col>
           <v-col>
             <v-textarea
               outlined
+              v-model="coachCareer"
               name="career"
               label="주요 경력 및 이력"
-              value="The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped nearly through."
             ></v-textarea>
           </v-col>
 
@@ -163,19 +174,50 @@
             value="100"
           ></v-progress-linear>
 
-          <div v-for="(options, index) in optionItems" :key="options">
-            <OptionCard
-              :index="index"
-              :numbering="numbering"
-              class="optionCard"
-            >
-            </OptionCard>
+          <div v-for="(options, index) in numbering" :key="options">
+            <v-card>
+              <v-btn
+                absolute
+                right
+                style="margin: 10px 5px;"
+                @click="[deleteEvent(index), deleteOption(index)]"
+                >삭제</v-btn
+              >
+              <option-card
+                ref="optionCardref"
+                :index="index"
+                @updateName="updateName"
+                @updateDesc="updateDesc"
+                @updatePrice="updatePrice"
+                @updateDiscount="updateDiscount"
+                @updateDelete="updateDelete"
+                @updateStartDate="updateStartDate"
+                @updateStartTime="updateStartTime"
+                @updateEndDate="updateEndDate"
+                @updateEndTime="updateEndTime"
+                @updateType="updateType"
+                :numbering="numbering"
+                class="optionCard"
+                :optionName="optionName[index]"
+                :optionDesc="optionDesc[index]"
+                :optionPrice="optionPrice[index]"
+                :optionDiscount="optionDiscount[index]"
+                :optionDelete="optionDelete[index]"
+                :optionStartDate="optionStartDate[index]"
+                :optionEndDate="optionEndDate[index]"
+                :optionStartTime="optionStartTime[index]"
+                :optionEndTime="optionEndTime[index]"
+                :optionId="optionId[index]"
+                :optionType="optionType[index]"
+              >
+              </option-card>
+            </v-card>
           </div>
           <v-btn
             style="float: right; margin-top:30px;"
             width="100"
             height="50"
-            @click="[pushOptions(), NumberingFunction(), callParentFunction()]"
+            @click="[NumberingFunction(), callParentFunction()]"
             >상품추가</v-btn
           >
         </v-card-text>
@@ -188,33 +230,51 @@
 import AWS from "aws-sdk";
 import "codemirror/lib/codemirror.css";
 import "@toast-ui/editor/dist/toastui-editor.css";
-
-import OptionCard from "@/components/OptionCard.vue";
+import EventService from "@/services/EventService.js";
 import { Editor } from "@toast-ui/vue-editor";
+import OptionCard from "../components/OptionCard.vue";
 export default {
   name: "Exhibition",
   components: {
     editor: Editor,
     OptionCard,
   },
-  props: [`itemId`],
+  props: [`id`, `length`],
   data() {
     return {
       mdName: {
         name: null,
         value: null,
       },
-      numbering: 1,
-      id: "id",
-      title: "title",
-      tag1: "tag1",
-      tag2: "tag2",
-      tag3: "tag3",
-      tag4: "tag4",
-      owner: "owner",
-      optionItems: [0],
-      radioGroup: 2,
-      ItemsIndex: 0,
+      counter: 0,
+      postData: [],
+      optionData: [],
+      numbering: [],
+      itemId: null,
+      itemInfo: null,
+      coachDesc: null,
+      coachCareer: null,
+      isDataReady: false,
+      title: null,
+      tag1: null,
+      tag2: null,
+      tag3: null,
+      deleteYN: null,
+      badge: null,
+      likes: null,
+      optionName: [],
+      optionDesc: [],
+      optionPrice: [],
+      optionDiscount: [],
+      optionDelete: [],
+      optionStartDate: [],
+      optionEndDate: [],
+      optionStartTime: [],
+      optionEndTime: [],
+      optionId: [],
+      optionType: [],
+      owner: null,
+      radioGroup: null,
       selectMd: [
         { name: "상품설명", value: "desc" },
         { name: "자주 묻는 질문", value: "question" },
@@ -227,33 +287,225 @@ export default {
       URL: "https://advist.s3.ap-northeast-2.amazonaws.com/testFile.md",
     };
   },
+  computed: {
+    labeling: {
+      set() {},
+      get() {
+        return this.labelingF();
+      },
+    },
+  },
   created() {
     this.getFiles();
+    if ((this.id !== null || this.id !== undefined) && this.id !== 0) {
+      EventService.getItem(this.id)
+        .then((response) => {
+          this.itemInfo = response.data;
+          console.log("준비가 될 때까지 기다려주세요");
+          this.itemId = this.id;
+          this.title = this.itemInfo.item.title;
+          this.owner = this.itemInfo.item.owner;
+          this.tag1 = this.itemInfo.item.tag[0];
+          this.tag2 = this.itemInfo.item.tag[1];
+          this.tag3 = this.itemInfo.item.tag[2];
+          this.badge = this.itemInfo.item.label;
+          this.deleteYN = this.itemInfo.item.deleteYN;
+          this.likes = this.itemInfo.item.likes;
+          this.coachDesc = this.itemInfo.item.coachInfo.desc;
+          this.coachCareer = this.itemInfo.item.coachInfo.career;
+          for (var i = 0; i < this.itemInfo.item.options.length; i++) {
+            this.optionName[i] = this.itemInfo.item.options[i].title;
+            this.optionDesc[i] = this.itemInfo.item.options[i].desc;
+            this.optionPrice[i] = this.itemInfo.item.options[i].price;
+            this.optionDiscount[i] = this.itemInfo.item.options[
+              i
+            ].discountPrice;
+            this.optionDelete[i] = this.itemInfo.item.options[i].deleteYN;
+            this.optionType[i] = this.itemInfo.item.options[i].type;
+            var split1 = this.itemInfo.item.options[i].dateStart.split(" ");
+            this.optionStartDate[i] = split1[0];
+            this.optionStartTime[i] = split1[1];
+            var split2 = this.itemInfo.item.options[i].dateEnd.split(" ");
+            this.optionEndDate[i] = split2[0];
+            this.optionEndTime[i] = split2[1];
+          }
+          for (var l = 0; l < this.itemInfo.item.options.length; l++) {
+            this.counter++;
+            this.numbering.push(this.counter);
+          }
+          this.readyToShow();
+        })
+        .catch((error) => {
+          console.log("에러 발생");
+          console.log(error);
+        });
+    } else if (this.id === 0) {
+      this.itemId = this.length + 1;
+      this.title = null;
+      this.owner = null;
+      this.tag1 = null;
+      this.tag2 = null;
+      this.tag3 = null;
+      this.badge = "NONE";
+      this.deleteYN = false;
+      this.likes = 0;
+      this.coachDesc = null;
+      this.coachCareer = null;
+      this.optionName[0] = null;
+      this.optionDesc[0] = null;
+      this.optionPrice[0] = null;
+      this.optionDiscount[0] = null;
+      this.optionDelete[0] = false;
+      this.optionType[0] = null;
+      (this.optionStartDate[0] = new Date(
+        Date.now() - new Date().getTimezoneOffset() * 60000
+      )
+        .toISOString()
+        .substr(0, 10)),
+        (this.optionStartTime[0] = "00:00:00");
+      (this.optionEndDate[0] = new Date(
+        Date.now() - new Date().getTimezoneOffset() * 60000
+      )
+        .toISOString()
+        .substr(0, 10)),
+        (this.optionEndTime[0] = "00:00:59");
+      this.numbering.push(this.counter);
+      this.readyToShow();
+    } else {
+      console.log("에러 발생");
+    }
   },
   methods: {
+    deleteEvent: function(index) {
+      this.numbering.splice(index, 1);
+    },
+    labelingF() {
+      if (this.badge == "NONE") return (this.radioGroup = 1);
+      else if (this.badge == "NEW") return (this.radioGroup = 2);
+      else if (this.badge == "BEST") return (this.radioGroup = 3);
+      else return console.log("에러 발생(labeling)");
+    },
+    labelingFBack() {
+      if (this.radioGroup == 1) return (this.badge = "NONE");
+      else if (this.radioGroup == 2) return (this.badge = "NEW");
+      else if (this.radioGroup == 3) return (this.badge = "BEST");
+      else return console.log("에러 발생(labeling)");
+    },
+    updateProductDetail() {
+      EventService.updateProductDetail(this.postData);
+    },
+    newProductDetail() {
+      EventService.newProductDetailSave(this.postData);
+    },
+    updateName(v) {
+      this.optionName[v.index] = v.optionName;
+    },
+    updateDesc(v) {
+      this.optionDesc[v.index] = v.optionDesc;
+    },
+    updatePrice(v) {
+      this.optionPrice[v.index] = v.optionPrice;
+    },
+    updateDiscount(v) {
+      this.optionDiscount[v.index] = v.optionDiscount;
+    },
+    updateDelete(v) {
+      this.optionDelete[v.index] = v.optionDelete;
+    },
+    updateStartDate(v) {
+      this.optionStartDate[v.index] = v.optionStartDate;
+    },
+    updateStartTime(v) {
+      this.optionStartTime[v.index] = v.optionStartTime;
+    },
+    updateEndDate(v) {
+      this.optionEndDate[v.index] = v.optionEndDate;
+    },
+    updateEndTime(v) {
+      this.optionEndTime[v.index] = v.optionEndTime;
+    },
+    updateType(v) {
+      this.optionType[v.index] = v.optionType;
+    },
+    deleteOption(index) {
+      this.optionName.splice(index, 1);
+      this.optionDesc.splice(index, 1);
+      this.optionPrice.splice(index, 1);
+      this.optionDiscount.splice(index, 1);
+      this.optionDelete.splice(index, 1);
+      this.optionStartDate.splice(index, 1);
+      this.optionStartTime.splice(index, 1);
+      this.optionEndDate.splice(index, 1);
+      this.optionEndTime.splice(index, 1);
+      this.optionType.splice(index, 1);
+    },
     test() {
       console.log(this.mdName);
     },
-    // selectMdName(val) {
-    //   if (val == "상품설명") this.mdName = "desc";
-    //   else if (val == "자주 묻는 질문") this.mdName = "question";
-    //   else {
-    //     console.log("error occured");
-    //   }
-    // },
+    readyToShow() {
+      if (this.itemInfo !== null || this.id === 0)
+        return (this.isDataReady = true);
+      else {
+        this.isDataReady = this.readyToShow();
+      }
+    },
+    getOptionDataValue() {
+      for (var i = 0; i < this.$refs.optionCardref.length; i++)
+        this.optionData[i] = this.$refs.optionCardref[i].sendData();
+      this.setData();
+    },
+    setData() {
+      if (this.itemId !== this.length + 1) {
+        this.postData = {
+          coachImg: "",
+          coachInfo: {
+            desc: this.coachDesc,
+            career: this.coachCareer,
+          },
+          commentImg: "",
+          deleteYN: this.deleteYN,
+          img: "",
+          itemId: this.itemId,
+          label: this.labelingFBack(),
+          likes: this.likes,
+          title: this.title,
+          owner: this.owner,
+          tag: [this.tag1, this.tag2, this.tag3],
+          template: this.itemInfo.item.template,
+          options: this.optionData,
+        };
+        this.updateProductDetail();
+      } else {
+        this.postData = {
+          coachImg: "",
+          coachInfo: {
+            desc: this.coachDesc,
+            career: this.coachCareer,
+          },
+          commentImg: "",
+          deleteYN: this.deleteYN,
+          img: "",
+          itemId: this.itemId,
+          label: this.labelingFBack(),
+          likes: this.likes,
+          title: this.title,
+          owner: this.owner,
+          tag: [this.tag1, this.tag2, this.tag3],
+          template: [{ title: "example", img: "" }],
+          options: this.optionData,
+        };
+        this.newProductDetail();
+      }
+    },
     NumberingFunction() {
-      this.numbering++;
+      this.counter++;
+      this.numbering.push(this.counter);
     },
     handleFileUpload() {
       this.file = this.$refs.file.files[0];
     },
-    pushOptions() {
-      this.ItemsIndex++;
-      this.optionItems.push(this.ItemsIndex);
-    },
     callParentFunction() {
       this.$emit("controlHeight", 691); // emit an event to parent
-      console.log("it's working");
     },
     uploadFile() {
       AWS.config.update({
@@ -309,7 +561,6 @@ export default {
           );
         } else {
           this.fileList = data.Contents;
-          console.log(data);
         }
       });
     },

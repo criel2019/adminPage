@@ -24,7 +24,7 @@
             </v-list-item></router-link
           >
 
-          <router-link class="link-to" to="/detail">
+          <router-link class="link-to" to="/product">
             <v-list-item>
               <v-list-item-icon>
                 <v-icon>mdi-file-document-multiple</v-icon>
@@ -72,7 +72,6 @@ export default {
     increaseWindowSize(event) {
       this.event = event;
       this.height = this.height + event;
-      console.log(this.height);
     },
   },
 };
