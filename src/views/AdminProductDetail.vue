@@ -126,7 +126,22 @@
               accept="image/*"
               label="상품 썸네일"
               outlined
+              show-size
+              v-model="thumbnailFile"
             ></v-file-input>
+            <v-img
+              lazy-src="https://picsum.photos/id/11/10/6"
+              max-height="250"
+              max-width="250"
+              :src="thumbnailUrl"
+            ></v-img>
+            <v-btn
+              absolute
+              right
+              style="margin-top: -30px;"
+              @click="uploadThumbnail"
+              >썸네일 등록</v-btn
+            >
             <v-select
               :items="selectMd"
               item-text="name"
@@ -144,24 +159,59 @@
               initialEditType="markdown"
               previewStyle="vertical"
             />
-            <v-btn
-              @click="getMarkdown"
-              style="width: 100px; float: right; height: 50px; margin-top: 30px;"
-              >파일 업로드</v-btn
-            >
-            <div v-for="(file, index) in fileList" :key="file.Key">
-              #{{ index + 1 }}: {{ file.Key }}
-              <v-btn @click="deleteFiles(file.Key)" color="red" text
-                >삭제</v-btn
+
+            <v-row>
+              <v-btn
+                @click="getMarkdown"
+                width="100"
+                absolute
+                right
+                style=" height: 50px; margin-top: 30px; margin-right: 140px;"
+                >파일 업로드</v-btn
               >
-              <v-btn @click="setFiles(file.Key)" color="green" text
-                >파일 열기</v-btn
-              >
-            </div>
+              <v-dialog v-model="dialog" width="600px">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    v-bind="attrs"
+                    v-on="on"
+                    absolute
+                    right
+                    width="120"
+                    style="margin-top: 30px; height: 50px; margin-left: 20px;"
+                  >
+                    S3 관리 열기
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title>
+                    <span class="text-h5">S3 관리</span>
+                  </v-card-title>
+                  <div
+                    v-for="(file, index) in fileList"
+                    :key="file.Key"
+                    style="padding: 0 10px;"
+                  >
+                    #{{ index + 1 }}: {{ file.Key }}
+                    <v-btn @click="deleteFiles(file.Key)" color="red" text
+                      >삭제</v-btn
+                    >
+                    <v-btn @click="setFiles(file.Key)" color="green" text
+                      >파일 열기</v-btn
+                    >
+                  </div>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="green darken-1" text @click="dialog = false">
+                      확인
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-row>
           </div>
           <template>
             <v-file-input
-              style="margin-top: 50px; padding: 0 10px;"
+              style=" padding: 0 10px;"
               accept="image/*"
               label="후기 이미지"
               outlined
@@ -279,12 +329,16 @@ export default {
         { name: "상품설명", value: "desc" },
         { name: "자주 묻는 질문", value: "question" },
       ],
+      fileType: null,
       file: null,
-      MarkdownsBucketName: "advist",
+      thumbnailFile: null,
+      thumbnailUrl: null,
+      BucketName: "advist",
       bucketRegion: "ap-northeast-2",
       IdentityPoolId: "ap-northeast-2:322e4b0e-9752-4390-a444-24f67b4afccf",
       fileList: [],
       URL: "https://advist.s3.ap-northeast-2.amazonaws.com/testFile.md",
+      dialog: false,
     };
   },
   computed: {
@@ -517,10 +571,10 @@ export default {
 
       var s3 = new AWS.S3({
         apiVersion: "2006-03-01",
-        params: { Bucket: this.MarkdownsBucketName },
+        params: { Bucket: this.BucketName },
       });
 
-      let key = this.mdName + ".md";
+      let key = "item/" + this.id + "/" + this.mdName + ".md";
       s3.upload(
         {
           Key: key,
@@ -535,11 +589,46 @@ export default {
               err.message
             );
           }
-          alert("Successfully uploaded Markdown.");
+          alert("Successfully uploaded file.");
           this.getFiles();
           console.log(data);
         }
       );
+    },
+    uploadThumbnail() {
+      AWS.config.update({
+        region: this.bucketRegion,
+        credentials: new AWS.CognitoIdentityCredentials({
+          IdentityPoolId: this.IdentityPoolId,
+        }),
+      });
+
+      var s3 = new AWS.S3({
+        apiVersion: "2006-03-01",
+        params: { Bucket: this.BucketName },
+      });
+
+      let key = "item/" + this.id + "/thumbnail.png";
+      s3.upload(
+        {
+          Key: key,
+          Body: this.thumbnailFile,
+          ACL: "public-read",
+        },
+        (err, data) => {
+          if (err) {
+            console.log(err);
+            return alert(
+              "There was an error uploading your Thumbnail: ",
+              err.message
+            );
+          }
+          alert("Successfully uploaded Thumbnail.");
+          this.getFiles();
+          console.log(data);
+        }
+      );
+      this.setFiles("item/" + this.id + "/thumbnail.png");
     },
     getFiles() {
       AWS.config.update({
@@ -551,18 +640,22 @@ export default {
 
       var s3 = new AWS.S3({
         apiVersion: "2006-03-01",
-        params: { Bucket: this.MarkdownsBucketName },
+        params: { Bucket: this.BucketName },
       });
 
-      s3.listObjects({ Delimiter: "/" }, (err, data) => {
-        if (err) {
-          return alert(
-            "There was an error listing your Markdownss: " + err.message
-          );
-        } else {
-          this.fileList = data.Contents;
+      s3.listObjects(
+        { Delimiter: "/", Prefix: "item/" + this.id + "/" },
+        (err, data) => {
+          if (err) {
+            return alert(
+              "There was an error listing your Markdownss: " + err.message
+            );
+          } else {
+            console.log(data);
+            this.fileList = data.Contents;
+          }
         }
-      });
+      );
     },
     deleteFiles(key) {
       AWS.config.update({
@@ -574,17 +667,14 @@ export default {
 
       var s3 = new AWS.S3({
         apiVersion: "2006-03-01",
-        params: { Bucket: this.MarkdownsBucketName },
+        params: { Bucket: this.BucketName },
       });
 
       s3.deleteObject({ Key: key }, (err, data) => {
         if (err) {
-          return alert(
-            "There was an error deleting your MarkdownFile: ",
-            err.message
-          );
+          return alert("There was an error deleting your File: ", err.message);
         }
-        alert("Successfully deleted MarkdownFile.");
+        alert("Successfully deleted File.");
         this.getFiles();
         console.log(data);
       });
@@ -602,9 +692,11 @@ export default {
     setMarkdown(data) {
       this.editor = this.$refs.toastuiEditor.invoke("setMarkdown", data);
     },
+    setThumbnail(url) {
+      this.thumbnailUrl = url;
+    },
     setContent(data) {
       this.setMarkdown(data);
-      console.log(data);
     },
     setFiles(key) {
       AWS.config.update({
@@ -616,8 +708,9 @@ export default {
 
       var s3 = new AWS.S3({
         apiVersion: "2006-03-01",
-        params: { Bucket: this.MarkdownsBucketName },
+        params: { Bucket: this.BucketName },
       });
+      var type = key.substring(key.lastIndexOf(".") + 1);
 
       s3.getSignedUrl(
         "getObject",
@@ -626,9 +719,11 @@ export default {
           console.log(err);
           console.log("The URL is", url);
           const fileUrl = url; // provide file location
-          fetch(fileUrl)
-            .then((r) => r.text())
-            .then((t) => this.setContent(t));
+          if (type === "md") {
+            fetch(fileUrl)
+              .then((r) => r.text())
+              .then((t) => this.setContent(t));
+          } else this.setThumbnail(fileUrl);
         }
       );
     },
