@@ -2,7 +2,9 @@
   <div class="AdminExhibition">
     <div class="rightBody" v-if="isDataReady">
       <v-card ref="form">
-        <v-btn style="margin: 20px 0 0 30px;">취소</v-btn>
+        <router-link class="event-link" :to="{ name: 'Product' }">
+          <v-btn style="margin: 20px 0 0 30px;">취소</v-btn>
+        </router-link>
         <v-btn
           @click="getOptionDataValue"
           style="float: right; margin: 20px 30px 0 0;"
@@ -127,6 +129,7 @@
               label="상품 썸네일"
               outlined
               show-size
+              @change="uploadThumbnail"
               v-model="thumbnailFile"
             ></v-file-input>
             <v-img
@@ -135,13 +138,6 @@
               max-width="250"
               :src="thumbnailUrl"
             ></v-img>
-            <v-btn
-              absolute
-              right
-              style="margin-top: -30px;"
-              @click="uploadThumbnail"
-              >썸네일 등록</v-btn
-            >
             <v-select
               :items="selectMd"
               item-text="name"
@@ -149,6 +145,8 @@
               v-model="mdName"
               label="작성할 상세 내용을 선택해주세요"
               class="pa-3"
+              required
+              :rules="law"
             >
             </v-select>
           </template>
@@ -296,6 +294,7 @@ export default {
         name: null,
         value: null,
       },
+      law: [(v) => !!v || "Item is required"],
       counter: 0,
       postData: [],
       optionData: [],
@@ -392,6 +391,7 @@ export default {
         .catch((error) => {
           console.log("에러 발생");
           console.log(error);
+          this.$router.push({ name: "Product" });
         });
     } else if (this.id === 0) {
       this.itemId = this.length + 1;
@@ -428,6 +428,16 @@ export default {
     } else {
       console.log("에러 발생");
     }
+    this.getFiles();
+    var thumbnailCheck = 0;
+    for (var i = 0; i < this.fileList.length; i++)
+      if (this.fileList[i].Key == "item/" + this.id + "/thumbnail.png")
+        thumbnailCheck++;
+    console.log(thumbnailCheck);
+    if (thumbnailCheck === 0)
+      this.thumbnailUrl =
+        "https://lh3.googleusercontent.com/proxy/HlrSFA76DPBamkhCEAn5H79yQjijTEFkOWxBj1JsCk6aTDD6nResPt-iZstF-3ydCuS1DYBrj9FJ2PASRtWl3KyZvMnslIsYehNgAEOTLZiiebmgjqr6UCE_VYx3RwM";
+    else this.setFiles("item/" + this.id + "/thumbnail.png");
   },
   methods: {
     deleteEvent: function(index) {
@@ -623,7 +633,7 @@ export default {
               err.message
             );
           }
-          alert("Successfully uploaded Thumbnail.");
+          console.log("Successfully uploaded Thumbnail.");
           this.getFiles();
           console.log(data);
         }
@@ -711,7 +721,6 @@ export default {
         params: { Bucket: this.BucketName },
       });
       var type = key.substring(key.lastIndexOf(".") + 1);
-
       s3.getSignedUrl(
         "getObject",
         { Expires: 60 * 60, Key: key },
@@ -723,7 +732,8 @@ export default {
             fetch(fileUrl)
               .then((r) => r.text())
               .then((t) => this.setContent(t));
-          } else this.setThumbnail(fileUrl);
+          } else if (type === "png") this.setThumbnail(fileUrl);
+          else return "error";
         }
       );
     },
@@ -738,5 +748,8 @@ export default {
 }
 .optionCard {
   margin-top: 40px;
+}
+.event-link {
+  text-decoration: none;
 }
 </style>
